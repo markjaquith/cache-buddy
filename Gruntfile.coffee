@@ -9,7 +9,7 @@ module.exports = (grunt) ->
 				sourceMap: yes
 			default:
 				files:
-					'js/cache_buddy.js': 'js/cache_buddy.coffee'
+					'js/cache-buddy.js': 'js/cache-buddy.coffee'
 
 		coffeelint:
 			default: [ 'js/*.coffee' ]
@@ -45,9 +45,9 @@ module.exports = (grunt) ->
 						except: [ 'jQuery' ]
 			default:
 				files: [
-					src: 'js/cache_buddy.js'
-					dest: 'js/cache_buddy.min.js'
-					sourceMapIn: 'js/cache_buddy.js.map'
+					src: 'js/cache-buddy.js'
+					dest: 'js/cache-buddy.min.js'
+					sourceMapIn: 'js/cache-buddy.js.map'
 				]
 
 		compass:

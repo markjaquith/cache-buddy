@@ -16,7 +16,7 @@ Minimizes the situations in which logged-in users appear logged-in to WordPress,
 
 ### Manual Installation ###
 
-1. Upload the entire `/cache_buddy` directory to the `/wp-content/plugins/` directory.
+1. Upload the entire `/cache-buddy` directory to the `/wp-content/plugins/` directory.
 2. Activate Cache Buddy through the 'Plugins' menu in WordPress.
 
 ## Frequently Asked Questions ##

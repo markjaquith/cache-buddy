@@ -1,15 +1,15 @@
 <?php
-/**
- * Plugin Name: Cache Buddy
- * Plugin URI:  
- * Description: Minimizes the situations in which logged-in users appear logged-in to WordPress, which increases the cacheability of your site.
- * Version:     0.1.0
- * Author:      Mark Jaquith
- * Author URI:  http://markjaquith.com/
- * License:     GPLv2+
- * Text Domain: cache_buddy
- * Domain Path: /languages
- */
+/*
+Plugin Name: Cache Buddy
+Plugin URI:
+Description: Minimizes the situations in which logged-in users appear logged-in to WordPress, which increases the cacheability of your site.
+Version:     0.1.0
+Author:      Mark Jaquith
+Author URI:  http://markjaquith.com/
+License:     GPLv2+
+Text Domain: cache-buddy
+Domain Path: /languages
+*/
 
 /**
  * Copyright (c) 2015 Mark Jaquith (email : mark@jaquith.me)

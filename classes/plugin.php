@@ -22,6 +22,6 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	 * Initializes the plugin, registers textdomain, etc
 	 */
 	public function init() {
-		$this->load_textdomain( 'cache_buddy', '/languages' );
+		$this->load_textdomain( 'cache-buddy', '/languages' );
 	}
 }
