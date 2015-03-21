@@ -30,6 +30,9 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		$this->maybe_alter_cookies();
 	}
 
+	/**
+	 * Potentially performs cookie operations
+	 */
 	public function maybe_alter_cookies() {
 		$this->logout_frontend();
 		if (
@@ -67,10 +70,22 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		$this->set_cookie( self::USERNAME_COOKIE, $user->user_login );
 	}
 
+	/**
+	 * Deletes a cookie
+	 *
+	 * @param  string $name the name of the cookie to delete
+	 */
 	protected function delete_cookie( $name ) {
-		return $this->set_cookie( $name, ' ', time() - YEAR_IN_SECONDS );
+		$this->set_cookie( $name, ' ', time() - YEAR_IN_SECONDS );
 	}
 
+	/**
+	 * Sets a cookie
+	 *
+	 * @param string $name the name of the cookie to set
+	 * @param string $value the value of the cookie
+	 * @param int    $expiration Unix timestamp of when the cookie should expire
+	 */
 	protected function set_cookie( $name, $value, $expiration = null ) {
 		if ( null === $expiration ) {
 			$expiration = time() + (14 * DAY_IN_SECONDS);
