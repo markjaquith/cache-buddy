@@ -39,25 +39,20 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	 * Potentially performs cookie operations
 	 */
 	public function maybe_alter_cookies() {
-		// Temporarily running these on every load
-		if ( is_admin() ) {
-			$this->logout_frontend();
-			$this->set_cookies();
-		}
-		if (
-			! is_admin() &&
-			! defined( 'DOING_AJAX' ) &&
-			is_user_logged_in() &&
-			! current_user_can( 'publish_posts'
-		) ) {
-			$this->logout_frontend();
+		if ( is_user_logged_in() ) {
+			$logged_in_frontend = apply_filters( 'cache_buddy_logged_in_frontend', current_user_can( 'publish_posts' ) );
+			if ( ! $logged_in_frontend ){
+				$this->logout_frontend();
+			}
 		}
 
-		if ( is_user_logged_in() &&
+		if (
+			is_user_logged_in() &&
 			(
 				! isset( $_COOKIE[self::VERSION_COOKIE] ) ||
 				self::COOKIE_VERSION != $_COOKIE[self::VERSION_COOKIE]
-		)) {
+			)
+		) {
 			$this->set_cookies();
 		}
 	}
@@ -72,16 +67,23 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 
 		foreach ( array( AUTH_COOKIE, SECURE_AUTH_COOKIE, LOGGED_IN_COOKIE ) as $name ) {
 			$this->delete_cookie( $name, trailingslashit( SITECOOKIEPATH ) . 'wp-login.php' );
+			$this->delete_cookie( $name, trailingslashit( SITECOOKIEPATH ) . 'wp-admin' );
 		}
 	}
 
 	/**
 	 * Sets the custom cookies on `set_logged_in_cookie` action
+	 *
+	 * @param string $value the value of the cookie
+	 * @param int    $grace the grace period for the expiration (unused)
+	 * @param int    $expiration the unix timestamp of the cookie expiration
+	 * @param int    $user_id the user id being logged in
 	 */
 	public function set_logged_in_cookie( $value, $grace, $expiration, $user_id ) {
 		$this->user_id = $user_id;
 		$this->set_cookies();
-		$this->set_cookie( LOGGED_IN_COOKIE, $value, $expiration, trailingslashit( SITECOOKIEPATH ) . 'wp-login.php' );
+		setcookie( LOGGED_IN_COOKIE, $value, $expiration, trailingslashit( SITECOOKIEPATH ) . 'wp-login.php', COOKIE_DOMAIN, false, true );
+		setcookie( LOGGED_IN_COOKIE, $value, $expiration, trailingslashit( SITECOOKIEPATH ) . 'wp-admin', COOKIE_DOMAIN, false, true );
 	}
 
 	/**
@@ -92,6 +94,11 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		$this->delete_cookie( 'wordpress_test_cookie' );
 	}
 
+	/**
+	 * Gets the names and values of the custom cookies
+	 *
+	 * @return array the cookie names/values
+	 */
 	public function get_cookies() {
 		$user_id = get_current_user_id();
 
@@ -153,8 +160,17 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		}
 	}
 
+	/**
+	 * Sets an auth cookie for wp-login.php
+	 *
+	 * @param string $value the value of the cookie
+	 * @param int    $grace the grace period for the expiration (unused)
+	 * @param int    $expiration the unix timestamp of the cookie expiration
+	 * @param int    $user_id the user id being logged in
+	 * @param string $scheme the login scheme ('auth' or 'secure_auth')
+	 */
 	public function set_auth_cookie( $value, $grace, $expiration, $user_id, $scheme ) {
 		$cookie_name = 'secure_auth' === $scheme ? SECURE_AUTH_COOKIE : AUTH_COOKIE;
-		$this->set_cookie( $cookie_name, $value, $expiration, trailingslashit( SITECOOKIEPATH ) . 'wp-login.php' );
+		setcookie( $cookie_name, $value, $expiration, trailingslashit( SITECOOKIEPATH ) . 'wp-login.php', COOKIE_DOMAIN, 'secure_auth' === $scheme, true );
 	}
 }
