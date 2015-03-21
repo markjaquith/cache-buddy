@@ -66,8 +66,15 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	 */
 	public function set_cookies() {
 		$user = wp_get_current_user();
-		$this->set_cookie( self::VERSION_COOKIE, self::COOKIE_VERSION );
-		$this->set_cookie( self::USERNAME_COOKIE, $user->user_login );
+
+		$cookies = array(
+			self::VERSION_COOKIE => self::COOKIE_VERSION,
+			self::USERNAME_COOKIE => $user->user_login,
+		);
+		$cookies = apply_filters( 'cache_buddy_cookies', $cookies );
+		foreach ( $cookies as $name => $value ) {
+			$this->set_cookie( $name, $value );
+		}
 	}
 
 	/**
