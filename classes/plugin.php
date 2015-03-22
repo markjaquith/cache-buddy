@@ -6,6 +6,7 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	const VERSION_COOKIE = 'cache_buddy_v';
 	const USERNAME_COOKIE = 'cache_buddy_username';
 	const ROLE_COOKIE = 'cache_buddy_role';
+	const CSS_JS_VERSION = '1';
 
 	protected $user_id;
 
@@ -24,6 +25,9 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		$this->hook( 'clear_auth_cookie' );
 		$this->hook( 'set_logged_in_cookie' );
 		$this->hook( 'set_auth_cookie' );
+		remove_action( 'set_comment_cookies', 'wp_set_comment_cookies' );
+		$this->hook( 'set_comment_cookies' );
+		$this->hook( 'wp_enqueue_scripts' );
 	}
 
 	/**
@@ -55,6 +59,24 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		) {
 			$this->set_cookies();
 		}
+	}
+
+	public function wp_enqueue_scripts() {
+		if ( is_single() && comments_open() ) {
+			wp_enqueue_script( 'cache-buddy-comments', $this->get_url() . 'js/cache-buddy.min.js', array( 'jquery' ), self::CSS_JS_VERSION, true );
+		}
+	}
+
+	public function set_comment_cookies($comment, $user) {
+		if ( $user->exists() ) {
+			return;
+		}
+
+		$comment_cookie_lifetime = apply_filters( 'comment_cookie_lifetime', 30000000 );
+		$secure = ( 'https' === parse_url( home_url(), PHP_URL_SCHEME ) );
+		setcookie( 'cache_buddy_comment_name', $comment->comment_author, time() + $comment_cookie_lifetime, COOKIEPATH, COOKIE_DOMAIN, $secure );
+		setcookie( 'cache_buddy_comment_email', $comment->comment_author_email, time() + $comment_cookie_lifetime, COOKIEPATH, COOKIE_DOMAIN, $secure );
+		setcookie( 'cache_buddy_comment_url', esc_url($comment->comment_author_url), time() + $comment_cookie_lifetime, COOKIEPATH, COOKIE_DOMAIN, $secure );
 	}
 
 	/**

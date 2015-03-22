@@ -21,7 +21,7 @@ if ( !class_exists( 'WP_Stack_Plugin2' ) ) {
 		public static function start( $__FILE__ ) {
 			if ( ! isset( static::$instance ) ) {
 				static::$instance = new static();
-				static::$instance->__FILE__ == $__FILE__;
+				static::$instance->__FILE__ = $__FILE__;
 			}
 			return static::get_instance();
 		}
