@@ -28,15 +28,19 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	 * Adds hooks
 	 */
 	public function add_hooks() {
-		$this->hook( 'init' );
-		$this->hook( 'clear_auth_cookie' );
-		$this->hook( 'set_logged_in_cookie' );
-		$this->hook( 'set_auth_cookie' );
-		remove_action( 'set_comment_cookies', 'wp_set_comment_cookies' );
-		$this->hook( 'set_comment_cookies' );
-		$this->hook( 'wp_enqueue_scripts' );
-		$this->hook( 'comment_form_defaults', 9999 );
-		$this->hook( 'comment_form_after_fields', 9999 );
+		if ( ! get_option( 'comment_registration' ) ) {
+			$this->hook( 'init' );
+			$this->hook( 'clear_auth_cookie' );
+			$this->hook( 'set_logged_in_cookie' );
+			$this->hook( 'set_auth_cookie' );
+			remove_action( 'set_comment_cookies', 'wp_set_comment_cookies' );
+			$this->hook( 'set_comment_cookies' );
+			$this->hook( 'wp_enqueue_scripts' );
+			$this->hook( 'comment_form_defaults', 9999 );
+			$this->hook( 'comment_form_after_fields', 9999 );
+		} else {
+			$this->hook( 'admin_notices', 'comment_registration' );
+		}
 	}
 
 	/**
@@ -44,8 +48,9 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	 */
 	public function init() {
 		$this->load_textdomain( 'cache-buddy', '/languages' );
-
-		$this->maybe_alter_cookies();
+		if ( ! get_option( 'comment_registration' ) ) {
+			$this->maybe_alter_cookies();
+		}
 	}
 
 	/**
@@ -57,12 +62,21 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		return apply_filters( 'cache_buddy_logged_in_frontend', current_user_can( 'publish_posts' ) );
 	}
 
+	public function comment_registration() {
+		echo "<div class='notice'>";
+		echo "<p>";
+		_e( 'You have comment registration enabled, so Cache Buddy cannot be used.', 'cache-buddy' );
+		echo "</p>";
+		echo "</div>";
+	}
+
 	/**
 	 * Potentially performs cookie operations
 	 */
 	public function maybe_alter_cookies() {
 		if ( is_user_logged_in() && ! $this->current_user_gets_frontend_cookies() ) {
 			$this->logout_frontend();
+			$this->hook( 'template_redirect', 0 );
 		}
 
 		if (
@@ -82,6 +96,11 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 			// The user needs different cookies set, but we need them to log back in to get the values
 			wp_logout();
 		}
+	}
+
+	public function template_redirect() {
+		wp_redirect( remove_query_arg( 'Beetlejuice Beetlejuice Beetlejuice' ) );
+		die();
 	}
 
 	/**
