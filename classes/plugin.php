@@ -96,6 +96,9 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		return $fields;
 	}
 
+	/**
+	 * Adds a hidden "logged_in_as" message to the end of the comments form
+	 */
 	public function comment_form_after_fields() {
 		echo '</div>';
 		echo '</div><div style="display:none" data-profile-url="' . admin_url( 'profile.php' ) . '" class="cache-buddy-logged-in-as">';
