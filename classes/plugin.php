@@ -12,7 +12,10 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	const USER_ID_COOKIE = 'cache_buddy_id';
 	const CSS_JS_VERSION = '1';
 
+	protected $registration = false;
 	protected $logged_in_as_message = '';
+	protected $must_log_in_message = '';
+	protected $form_id = '';
 	protected $user_id;
 
 	/**
@@ -26,20 +29,17 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	 * Adds hooks
 	 */
 	public function add_hooks() {
-		if ( ! get_option( 'comment_registration' ) ) {
-			$this->hook( 'init' );
-			$this->hook( 'clear_auth_cookie' );
-			$this->hook( 'set_logged_in_cookie' );
-			$this->hook( 'set_auth_cookie' );
-			remove_action( 'set_comment_cookies', 'wp_set_comment_cookies' );
-			$this->hook( 'set_comment_cookies' );
-			$this->hook( 'wp_enqueue_scripts' );
-			$this->hook( 'comment_form_defaults', 9999 );
-			$this->hook( 'comment_form_after_fields', 9999 );
-			$this->hook( 'template_redirect', 'maybe_flush_cookies' );
-		} else {
-			$this->hook( 'admin_notices', 'comment_registration' );
-		}
+		$this->hook( 'init' );
+		$this->hook( 'clear_auth_cookie' );
+		$this->hook( 'set_logged_in_cookie' );
+		$this->hook( 'set_auth_cookie' );
+		remove_action( 'set_comment_cookies', 'wp_set_comment_cookies' );
+		$this->hook( 'set_comment_cookies' );
+		$this->hook( 'wp_enqueue_scripts' );
+		$this->hook( 'comment_form_defaults', 9999 );
+		$this->hook( 'comment_form_after_fields', 9999 );
+		$this->hook( 'template_redirect', 'maybe_flush_cookies' );
+		$this->hook( 'template_redirect', 'check_comment_registration' );
 	}
 
 	/**
@@ -58,14 +58,6 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	public function user_gets_frontend_cookies( $user_id ) {
 		$user = new WP_User( $user_id );
 		return apply_filters( 'cache_buddy_logged_in_frontend', $user->has_cap( 'publish_posts'), $user );
-	}
-
-	public function comment_registration() {
-		echo "<div class='notice'>";
-		echo "<p>";
-		_e( 'You have comment registration enabled, so Cache Buddy cannot be used.', 'cache-buddy' );
-		echo "</p>";
-		echo "</div>";
 	}
 
 	/**
@@ -103,6 +95,13 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		}
 	}
 
+	public function check_comment_registration() {
+		if ( get_option( 'comment_registration' ) ) {
+			$this->registration = true;
+			add_filter( 'pre_option_comment_registration',  '__return_zero', 952 );
+		}
+	}
+
 	/**
 	 * Filters and inspects the comment form
 	 *
@@ -112,6 +111,8 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	public function comment_form_defaults( $fields ) {
 		$fields['comment_notes_before'] = '<div class="cache-buddy-comment-fields-wrapper">' . $fields['comment_notes_before'];
 		$this->logged_in_as_message = $fields['logged_in_as'];
+		$this->must_log_in_message = $fields['must_log_in'];
+		$this->form_id = $fields['id_form'];
 		return $fields;
 	}
 
@@ -120,9 +121,14 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	 */
 	public function comment_form_after_fields() {
 		echo '</div>';
-		echo '</div><div style="display:none" data-profile-url="' . admin_url( 'profile.php' ) . '" class="cache-buddy-logged-in-as">';
+		echo '<div style="display:none" data-profile-url="' . admin_url( 'profile.php' ) . '" class="cache-buddy-logged-in-as">';
 		echo $this->logged_in_as_message;
 		echo '</div>';
+		if ( $this->registration ) {
+			echo '<div style="display:none" data-form-id="' . $this->form_id . '" class="cache-buddy-must-log-in">';
+			echo $this->must_log_in_message;
+			echo '</div>';
+		}
 	}
 
 	/**

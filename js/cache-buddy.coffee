@@ -10,6 +10,7 @@ do ($ = jQuery) ->
 		''
 
 	$ ->
+		mustLogIn = $ '.cache-buddy-must-log-in'
 		if readCookie 'cache_buddy_id'
 			loggedInMessage = $ '.cache-buddy-logged-in-as'
 				.detach()
@@ -20,6 +21,11 @@ do ($ = jQuery) ->
 				.attr href: profileURL
 			$ '.cache-buddy-comment-fields-wrapper'
 				.html loggedInMessage
+		else if mustLogIn.length
+			$ "##{mustLogIn.data 'form-id'}"
+				.html mustLogIn.detach().show()
+ 			$ '.comment-reply-link'
+ 				.hide()
 
 		else if readCookie 'cache_buddy_comment_name'
 			$('#author').val readCookie 'cache_buddy_comment_name'
