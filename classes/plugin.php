@@ -95,6 +95,11 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		}
 	}
 
+	/**
+	 * Turns off comment registration, so that the comment form prints more fields
+	 *
+	 * Stores the original registration value for later
+	 */
 	public function check_comment_registration() {
 		if ( get_option( 'comment_registration' ) ) {
 			$this->registration = true;
@@ -248,7 +253,7 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 			self::VERSION_COOKIE  => self::COOKIE_VERSION,
 			self::USERNAME_COOKIE => $user->user_login,
 			self::ROLE_COOKIE     => $role,
-			self::USER_ID_COOKIE => $user->ID,
+			self::USER_ID_COOKIE  => $user->ID,
 		);
 		return apply_filters( 'cache_buddy_cookies', $cookies );
 	}
@@ -265,14 +270,15 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	/**
 	 * Deletes a cookie
 	 *
-	 * @param  string $name the name of the cookie to delete
+	 * @param string $name the name of the cookie to delete
+	 * @param string $path the path at which to delete the cookie
 	 */
 	protected function delete_cookie( $name, $path = null ) {
 		$this->set_cookie( $name, ' ', time() - YEAR_IN_SECONDS, $path );
 	}
 
 	/**
-	 * Sets a cookie
+	 * Sets a cookie for several paths
 	 *
 	 * @param string $name the name of the cookie to set
 	 * @param string $value the value of the cookie
