@@ -3,9 +3,7 @@ defined( 'WPINC' ) or die;
 
 class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	const COOKIE_VERSION = 1;
-	const STRICT_COOKIE_VERSION = 1;
 	const VERSION_COOKIE = 'cache_buddy_v';
-	const STRICT_VERSION_COOKIE = 'cache_buddy_strict_v';
 	const USERNAME_COOKIE = 'cache_buddy_username';
 	const COMMENT_NAME_COOKIE = 'cache_buddy_comment_name';
 	const COMMENT_EMAIL_COOKIE = 'cache_buddy_comment_email';
@@ -38,6 +36,7 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 			$this->hook( 'wp_enqueue_scripts' );
 			$this->hook( 'comment_form_defaults', 9999 );
 			$this->hook( 'comment_form_after_fields', 9999 );
+			$this->hook( 'template_redirect', 'maybe_flush_cookies' );
 		} else {
 			$this->hook( 'admin_notices', 'comment_registration' );
 		}
@@ -48,9 +47,7 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	 */
 	public function init() {
 		$this->load_textdomain( 'cache-buddy', '/languages' );
-		if ( ! get_option( 'comment_registration' ) ) {
-			$this->maybe_alter_cookies();
-		}
+		$this->maybe_log_out();
 	}
 
 	/**
@@ -58,8 +55,9 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	 *
 	 * @return bool whether the current user should get WordPress cookies on the frontend
 	 */
-	public function current_user_gets_frontend_cookies() {
-		return apply_filters( 'cache_buddy_logged_in_frontend', current_user_can( 'publish_posts' ) );
+	public function user_gets_frontend_cookies( $user_id ) {
+		$user = new WP_User( $user_id );
+		return apply_filters( 'cache_buddy_logged_in_frontend', $user->has_cap( 'publish_posts'), $user );
 	}
 
 	public function comment_registration() {
@@ -71,14 +69,9 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	}
 
 	/**
-	 * Potentially performs cookie operations
+	 * Kicks the user out if their cookies aren't up to date
 	 */
-	public function maybe_alter_cookies() {
-		if ( is_user_logged_in() && ! $this->current_user_gets_frontend_cookies() ) {
-			$this->logout_frontend();
-			$this->hook( 'template_redirect', 0 );
-		}
-
+	public function maybe_log_out() {
 		if (
 			is_user_logged_in() &&
 			(
@@ -86,21 +79,28 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 				self::COOKIE_VERSION != $_COOKIE[self::VERSION_COOKIE]
 			)
 		) {
-			$this->set_cookies();
-		}
-
-		if ( is_user_logged_in() &&
-			! isset( $_COOKIE[self::STRICT_VERSION_COOKIE] ) ||
-			self::STRICT_COOKIE_VERSION != $_COOKIE[self::STRICT_VERSION_COOKIE]
-		) {
 			// The user needs different cookies set, but we need them to log back in to get the values
 			wp_logout();
 		}
 	}
 
-	public function template_redirect() {
-		wp_redirect( remove_query_arg( 'Beetlejuice Beetlejuice Beetlejuice' ) );
-		die();
+	/**
+	 * Backup method to flush cookies and redirect in case the frontend cookies weren't properly flushed
+	 *
+	 * This shouldn't run, normally
+	 *
+	 * @beetlejuice true
+	 * @beetlejuice true
+	 * @beetlejuice true
+	 */
+	public function maybe_flush_cookies() {
+		if ( is_user_logged_in() && ! is_admin() && ! $GLOBALS['pagenow'] !== 'wp-login.php' && ! is_404() ) {
+			if ( ! $this->user_gets_frontend_cookies( get_current_user_id() ) ) {
+				$this->logout_frontend();
+				wp_redirect( remove_query_arg( 'Beetlejuice Beetlejuice Beetlejuice' ) );
+				die();
+			}
+		}
 	}
 
 	/**
@@ -204,17 +204,21 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	 */
 	public function set_logged_in_cookie( $value, $grace, $expiration, $user_id ) {
 		$this->user_id = $user_id;
-		$this->set_cookies();
+		$this->set_cookies( $expiration );
 		setcookie( LOGGED_IN_COOKIE, $value, $expiration, trailingslashit( SITECOOKIEPATH ) . 'wp-comments-post.php', COOKIE_DOMAIN, false, true );
 		setcookie( LOGGED_IN_COOKIE, $value, $expiration, trailingslashit( SITECOOKIEPATH ) . 'wp-login.php', COOKIE_DOMAIN, false, true );
 		setcookie( LOGGED_IN_COOKIE, $value, $expiration, trailingslashit( SITECOOKIEPATH ) . 'wp-admin', COOKIE_DOMAIN, false, true );
+
+		if ( ! $this->user_gets_frontend_cookies( $user_id ) ) {
+			$this->hook( 'shutdown', 'logout_frontend' );
+		}
 	}
 
 	/**
 	 * Logs a user out of the front of the site (but not the backend)
 	 */
 	public function logout_frontend() {
-		$this->delete_cookie( LOGGED_IN_COOKIE  );
+		$this->delete_cookie( LOGGED_IN_COOKIE, COOKIEPATH );
 		$this->delete_cookie( 'wordpress_test_cookie' );
 	}
 
@@ -236,7 +240,6 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 
 		$cookies = array(
 			self::VERSION_COOKIE  => self::COOKIE_VERSION,
-			self::STRICT_VERSION_COOKIE => self::STRICT_COOKIE_VERSION,
 			self::USERNAME_COOKIE => $user->user_login,
 			self::ROLE_COOKIE     => $role,
 			self::USER_ID_COOKIE => $user->ID,
@@ -247,9 +250,9 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	/**
 	 * Sets custom cookies
 	 */
-	public function set_cookies() {
+	public function set_cookies( $expiration ) {
 		foreach ( $this->get_cookies() as $name => $value ) {
-			$this->set_cookie( $name, $value );
+			$this->set_cookie( $name, $value, $expiration );
 		}
 	}
 
