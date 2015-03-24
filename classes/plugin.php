@@ -14,6 +14,7 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	const USER_ID_COOKIE = 'cache_buddy_id';
 	const CSS_JS_VERSION = '1';
 
+	protected $logged_in_as_message = '';
 	protected $user_id;
 
 	/**
@@ -34,6 +35,8 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		remove_action( 'set_comment_cookies', 'wp_set_comment_cookies' );
 		$this->hook( 'set_comment_cookies' );
 		$this->hook( 'wp_enqueue_scripts' );
+		$this->hook( 'comment_form_defaults', 9999 );
+		$this->hook( 'comment_form_after_fields', 9999 );
 	}
 
 	/**
@@ -79,6 +82,25 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 			// The user needs different cookies set, but we need them to log back in to get the values
 			wp_logout();
 		}
+	}
+
+	/**
+	 * Filters and inspects the comment form
+	 *
+	 * @param array $fields the comment form fields
+	 * @return array the filtered comment form fields
+	 */
+	public function comment_form_defaults( $fields ) {
+		$fields['comment_notes_before'] = '<div class="cache-buddy-comment-fields-wrapper">' . $fields['comment_notes_before'];
+		$this->logged_in_as_message = $fields['logged_in_as'];
+		return $fields;
+	}
+
+	public function comment_form_after_fields() {
+		echo '</div>';
+		echo '</div><div style="display:none" data-profile-url="' . admin_url( 'profile.php' ) . '" class="cache-buddy-logged-in-as">';
+		echo $this->logged_in_as_message;
+		echo '</div>';
 	}
 
 	/**

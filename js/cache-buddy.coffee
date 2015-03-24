@@ -10,6 +10,18 @@ do ($ = jQuery) ->
 		''
 
 	$ ->
-		$('#author').val readCookie 'cache_buddy_comment_name'
-		$('#email').val readCookie 'cache_buddy_comment_email'
-		$('#url').val readCookie 'cache_buddy_comment_url'
+		if readCookie 'cache_buddy_id'
+			loggedInMessage = $ '.cache-buddy-logged-in-as'
+				.detach()
+				.show()
+			profileURL = loggedInMessage.data 'profile-url'
+			loggedInMessage.find 'a[href=""]:empty'
+				.html readCookie 'cache_buddy_username'
+				.attr href: profileURL
+			$ '.cache-buddy-comment-fields-wrapper'
+				.html loggedInMessage
+
+		else if readCookie 'cache_buddy_comment_name'
+			$('#author').val readCookie 'cache_buddy_comment_name'
+			$('#email').val  readCookie 'cache_buddy_comment_email'
+			$('#url').val    readCookie 'cache_buddy_comment_url'
