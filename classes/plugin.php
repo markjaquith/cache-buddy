@@ -2,7 +2,7 @@
 defined( 'WPINC' ) or die;
 
 class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
-	const COOKIE_VERSION = 1;
+	const COOKIE_VERSION = 2;
 	const VERSION_COOKIE = 'cache_buddy_v';
 	const USERNAME_COOKIE = 'cache_buddy_username';
 	const COMMENT_NAME_COOKIE = 'cache_buddy_comment_name';
@@ -10,7 +10,7 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	const COMMENT_URL_COOKIE = 'cache_buddy_comment_url';
 	const ROLE_COOKIE = 'cache_buddy_role';
 	const USER_ID_COOKIE = 'cache_buddy_id';
-	const CSS_JS_VERSION = '1';
+	const CSS_JS_VERSION = '0.2.0-release';
 
 	protected $registration = false;
 	protected $logged_in_as_message = '';
