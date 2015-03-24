@@ -3,12 +3,15 @@ defined( 'WPINC' ) or die;
 
 class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	const COOKIE_VERSION = 1;
+	const STRICT_COOKIE_VERSION = 1;
 	const VERSION_COOKIE = 'cache_buddy_v';
+	const STRICT_VERSION_COOKIE = 'cache_buddy_strict_v';
 	const USERNAME_COOKIE = 'cache_buddy_username';
 	const COMMENT_NAME_COOKIE = 'cache_buddy_comment_name';
 	const COMMENT_EMAIL_COOKIE = 'cache_buddy_comment_email';
 	const COMMENT_URL_COOKIE = 'cache_buddy_comment_url';
 	const ROLE_COOKIE = 'cache_buddy_role';
+	const USER_ID_COOKIE = 'cache_buddy_id';
 	const CSS_JS_VERSION = '1';
 
 	protected $user_id;
@@ -43,14 +46,20 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	}
 
 	/**
+	 * Says whether the current user should get WordPress cookies on the frontend
+	 *
+	 * @return bool whether the current user should get WordPress cookies on the frontend
+	 */
+	public function current_user_gets_frontend_cookies() {
+		return apply_filters( 'cache_buddy_logged_in_frontend', current_user_can( 'publish_posts' ) );
+	}
+
+	/**
 	 * Potentially performs cookie operations
 	 */
 	public function maybe_alter_cookies() {
-		if ( is_user_logged_in() ) {
-			$logged_in_frontend = apply_filters( 'cache_buddy_logged_in_frontend', current_user_can( 'publish_posts' ) );
-			if ( ! $logged_in_frontend ){
-				$this->logout_frontend();
-			}
+		if ( is_user_logged_in() && ! $this->current_user_gets_frontend_cookies() ) {
+			$this->logout_frontend();
 		}
 
 		if (
@@ -62,13 +71,21 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		) {
 			$this->set_cookies();
 		}
+
+		if ( is_user_logged_in() &&
+			! isset( $_COOKIE[self::STRICT_VERSION_COOKIE] ) ||
+			self::STRICT_COOKIE_VERSION != $_COOKIE[self::STRICT_VERSION_COOKIE]
+		) {
+			// The user needs different cookies set, but we need them to log back in to get the values
+			wp_logout();
+		}
 	}
 
 	/**
 	 * Enqueues the comment-form-filling script on pages with comment forms
 	 */
 	public function wp_enqueue_scripts() {
-		if ( is_single() && comments_open() ) {
+		if ( is_singular() && comments_open() ) {
 			wp_enqueue_script( 'cache-buddy-comments', $this->get_url() . 'js/cache-buddy.min.js', array( 'jquery' ), self::CSS_JS_VERSION, true );
 		}
 	}
@@ -127,6 +144,7 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		}
 
 		foreach ( array( AUTH_COOKIE, SECURE_AUTH_COOKIE, LOGGED_IN_COOKIE ) as $name ) {
+			$this->delete_cookie( $name, trailingslashit( SITECOOKIEPATH ) . 'wp-comments-post.php' );
 			$this->delete_cookie( $name, trailingslashit( SITECOOKIEPATH ) . 'wp-login.php' );
 			$this->delete_cookie( $name, trailingslashit( SITECOOKIEPATH ) . 'wp-admin' );
 		}
@@ -143,6 +161,7 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	public function set_logged_in_cookie( $value, $grace, $expiration, $user_id ) {
 		$this->user_id = $user_id;
 		$this->set_cookies();
+		setcookie( LOGGED_IN_COOKIE, $value, $expiration, trailingslashit( SITECOOKIEPATH ) . 'wp-comments-post.php', COOKIE_DOMAIN, false, true );
 		setcookie( LOGGED_IN_COOKIE, $value, $expiration, trailingslashit( SITECOOKIEPATH ) . 'wp-login.php', COOKIE_DOMAIN, false, true );
 		setcookie( LOGGED_IN_COOKIE, $value, $expiration, trailingslashit( SITECOOKIEPATH ) . 'wp-admin', COOKIE_DOMAIN, false, true );
 	}
@@ -173,8 +192,10 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 
 		$cookies = array(
 			self::VERSION_COOKIE  => self::COOKIE_VERSION,
+			self::STRICT_VERSION_COOKIE => self::STRICT_COOKIE_VERSION,
 			self::USERNAME_COOKIE => $user->user_login,
 			self::ROLE_COOKIE     => $role,
+			self::USER_ID_COOKIE => $user->ID,
 		);
 		return apply_filters( 'cache_buddy_cookies', $cookies );
 	}
