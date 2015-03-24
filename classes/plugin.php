@@ -5,6 +5,9 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	const COOKIE_VERSION = 1;
 	const VERSION_COOKIE = 'cache_buddy_v';
 	const USERNAME_COOKIE = 'cache_buddy_username';
+	const COMMENT_NAME_COOKIE = 'cache_buddy_comment_name';
+	const COMMENT_EMAIL_COOKIE = 'cache_buddy_comment_email';
+	const COMMENT_URL_COOKIE = 'cache_buddy_comment_url';
 	const ROLE_COOKIE = 'cache_buddy_role';
 	const CSS_JS_VERSION = '1';
 
@@ -61,12 +64,21 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		}
 	}
 
+	/**
+	 * Enqueues the comment-form-filling script on pages with comment forms
+	 */
 	public function wp_enqueue_scripts() {
 		if ( is_single() && comments_open() ) {
 			wp_enqueue_script( 'cache-buddy-comments', $this->get_url() . 'js/cache-buddy.min.js', array( 'jquery' ), self::CSS_JS_VERSION, true );
 		}
 	}
 
+	/**
+	 * Sets our custom comment cookies on comment submission
+	 *
+	 * @param object $comment the comment object
+	 * @param WP_User $user the WordPress user who submitted the comment
+	 */
 	public function set_comment_cookies($comment, $user) {
 		if ( $user->exists() ) {
 			return;
@@ -74,9 +86,36 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 
 		$comment_cookie_lifetime = apply_filters( 'comment_cookie_lifetime', 30000000 );
 		$secure = ( 'https' === parse_url( home_url(), PHP_URL_SCHEME ) );
-		setcookie( 'cache_buddy_comment_name', $comment->comment_author, time() + $comment_cookie_lifetime, COOKIEPATH, COOKIE_DOMAIN, $secure );
-		setcookie( 'cache_buddy_comment_email', $comment->comment_author_email, time() + $comment_cookie_lifetime, COOKIEPATH, COOKIE_DOMAIN, $secure );
-		setcookie( 'cache_buddy_comment_url', esc_url($comment->comment_author_url), time() + $comment_cookie_lifetime, COOKIEPATH, COOKIE_DOMAIN, $secure );
+
+		// Set the name cookie
+		setcookie(
+			self::COMMENT_NAME_COOKIE,
+			$comment->comment_author,
+			time() + $comment_cookie_lifetime,
+			COOKIEPATH,
+			COOKIE_DOMAIN,
+			$secure
+		);
+
+		// Set the email cookie
+		setcookie(
+			self::COMMENT_EMAIL_COOKIE,
+			$comment->comment_author_email,
+			time() + $comment_cookie_lifetime,
+			COOKIEPATH,
+			COOKIE_DOMAIN,
+			$secure
+		);
+
+		// Set the URL cookie
+		setcookie(
+			self::COMMENT_URL_COOKIE,
+			esc_url($comment->comment_author_url),
+			time() + $comment_cookie_lifetime,
+			COOKIEPATH,
+			COOKIE_DOMAIN,
+			$secure
+		);
 	}
 
 	/**
