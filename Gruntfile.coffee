@@ -140,8 +140,6 @@ module.exports = (grunt) ->
 					'!release/**'
 					'!.git/**'
 					'!.sass-cache/**'
-					'!css/**/*.sass'
-					'!js/**/*.coffee'
 					'!img/src/**'
 					'!Gruntfile.*'
 					'!package.json'
