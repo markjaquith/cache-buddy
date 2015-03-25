@@ -141,6 +141,7 @@ module.exports = (grunt) ->
 					'**'
 					'!node_modules/**'
 					'!release/**'
+					'!assets/**'
 					'!.git/**'
 					'!.sass-cache/**'
 					'!img/src/**'
