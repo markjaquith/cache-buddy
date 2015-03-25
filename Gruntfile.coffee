@@ -9,6 +9,9 @@ module.exports = (grunt) ->
 	,
 		from: /^### (.*?)( #+)?$/mg
 		to: '= $1 ='
+	,
+		from: /^Stable tag:\s*?[\w.-]+(\s*?)$/mi
+		to: 'Stable tag: <%= pkg.version %>$1'
 	]
 
 	# Project configuration
