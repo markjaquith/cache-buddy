@@ -1,16 +1,18 @@
 # Cache Buddy #
-Contributors:      markjaquith
-Donate link:       http://txfx.net/wordpress-plugins/donate  
-Tags:  
+Contributors: markjaquith  
+Donate link: http://txfx.net/wordpress-plugins/donate  
+Tags: caching, cache, speed, performance, faster  
 Requires at least: 4.1  
-Tested up to:      4.1  
-Stable tag:        0.1.0  
-License:           GPLv2 or later  
-License URI:       http://www.gnu.org/licenses/gpl-2.0.html  
+Tested up to: 4.2  
+Stable tag: 0.2.0  
+License: GPLv2 or later  
+License URI: http://www.gnu.org/licenses/gpl-2.0.html  
 
 Minimizes the situations in which logged-in users appear logged-in to WordPress, which increases the cacheability of your site.
 
 ## Description ##
+
+Minimizes the situations in which logged-in users appear logged-in to WordPress, which increases the cacheability of your site.
 
 ## Installation ##
 
@@ -21,24 +23,20 @@ Minimizes the situations in which logged-in users appear logged-in to WordPress,
 
 ## Frequently Asked Questions ##
 
-### Question ###
+### Will this work for BuddyPress sites? ###
 
-Answer
-
-## Screenshots ##
-
-1. Description of first screenshot
+No. Nor any other site that needs people to be logged in on the front of the site for anything other than comment form customizations.
 
 ## Contribute ##
 
-Here is how you can contribute:
+https://github.com/markjaquith/cache-buddy/
 
 ## Changelog ##
 
-### 0.1 ###
+### 0.2.0 ###
 * First release
 
 ## Upgrade Notice ##
 
-### 0.1.0 ###
+### 0.2.0 ###
 First release
