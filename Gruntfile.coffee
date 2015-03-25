@@ -241,8 +241,8 @@ module.exports = (grunt) ->
 		'copy:main'
 	]
 
-	# WordPress.org release task
-	grunt.registerTask 'release', [
+	# Prepare a WordPress.org release
+	grunt.registerTask 'release:prepare', [
 		'svn_checkout'
 		'build'
 		'copy:svn_trunk'
@@ -251,6 +251,11 @@ module.exports = (grunt) ->
 		'replace:svn_trunk_readme'
 		'replace:svn_tag_readme'
 		'clean:svn_readme_md'
+	]
+
+	# WordPress.org release task
+	grunt.registerTask 'release', [
+		'release:prepare'
 		'push_svn'
 	]
 
