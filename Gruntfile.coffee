@@ -241,6 +241,7 @@ module.exports = (grunt) ->
 		'default'
 		'clean'
 		'copy:main'
+		# 'compress'
 	]
 
 	# Prepare a WordPress.org release
