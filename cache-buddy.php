@@ -3,7 +3,7 @@
 Plugin Name: Cache Buddy
 Plugin URI:
 Description: Minimizes the situations in which logged-in users appear logged-in to WordPress, which increases the cacheability of your site.
-Version: 0.2.0
+Version: 0.2.1-beta-1
 Author:      Mark Jaquith
 Author URI:  http://markjaquith.com/
 License:     GPLv2+

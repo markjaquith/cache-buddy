@@ -10,7 +10,7 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	const COMMENT_URL_COOKIE = 'cache_buddy_comment_url';
 	const ROLE_COOKIE = 'cache_buddy_role';
 	const USER_ID_COOKIE = 'cache_buddy_id';
-	const CSS_JS_VERSION = '0.2.0-release';
+	const CSS_JS_VERSION = '0.2.1-beta-1';
 
 	protected $registration = false;
 	protected $logged_in_as_message = '';
