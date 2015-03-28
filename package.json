@@ -2,7 +2,7 @@
 	"name": "cache-buddy",
 	"title": "Cache Buddy",
 	"description": "Minimizes the situations in which logged-in users appear logged-in to WordPress, which increases the cacheability of your site.",
-	"version": "0.2.1-beta-1",
+	"version": "0.2.1-beta-2",
 	"homepage": "",
 	"author": {
 		"name": "Mark Jaquith",

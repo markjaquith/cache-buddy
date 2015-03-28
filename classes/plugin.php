@@ -10,7 +10,7 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	const COMMENT_URL_COOKIE = 'cache_buddy_comment_url';
 	const ROLE_COOKIE = 'cache_buddy_role';
 	const USER_ID_COOKIE = 'cache_buddy_id';
-	const CSS_JS_VERSION = '0.2.1-beta-1';
+	const CSS_JS_VERSION = '0.2.1-beta-2';
 
 	protected $registration = false;
 	protected $logged_in_as_message = '';
@@ -146,6 +146,21 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	}
 
 	/**
+	 * Provides a list of paths that should get a logged-in cookie
+	 */
+	public function get_logged_in_paths() {
+		$defaults = array(
+			trailingslashit( SITECOOKIEPATH ) . 'wp-comments-post.php',
+			trailingslashit( SITECOOKIEPATH ) . 'wp-login.php',
+			trailingslashit( SITECOOKIEPATH ) . 'wp-admin',
+		);
+		// Hook in here to let a user appear to be logged in for another URL
+		// e.g. add trailingslashit( COOKIEPATH ) . 'account', to allow
+		// users to be logged in at http://example.com/account/
+		return apply_filters( 'cache_buddy_logged_in_paths', $defaults );
+	}
+
+	/**
 	 * Sets our custom comment cookies on comment submission
 	 *
 	 * @param object $comment the comment object
@@ -199,9 +214,9 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 		}
 
 		foreach ( array( AUTH_COOKIE, SECURE_AUTH_COOKIE, LOGGED_IN_COOKIE ) as $name ) {
-			$this->delete_cookie( $name, trailingslashit( SITECOOKIEPATH ) . 'wp-comments-post.php' );
-			$this->delete_cookie( $name, trailingslashit( SITECOOKIEPATH ) . 'wp-login.php' );
-			$this->delete_cookie( $name, trailingslashit( SITECOOKIEPATH ) . 'wp-admin' );
+			foreach ( $this->get_logged_in_paths() as $path ) {
+				$this->delete_cookie( $name, $path );
+			}
 		}
 	}
 
@@ -216,9 +231,10 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	public function set_logged_in_cookie( $value, $grace, $expiration, $user_id ) {
 		$this->user_id = $user_id;
 		$this->set_cookies( $expiration );
-		setcookie( LOGGED_IN_COOKIE, $value, $expiration, trailingslashit( SITECOOKIEPATH ) . 'wp-comments-post.php', COOKIE_DOMAIN, false, true );
-		setcookie( LOGGED_IN_COOKIE, $value, $expiration, trailingslashit( SITECOOKIEPATH ) . 'wp-login.php', COOKIE_DOMAIN, false, true );
-		setcookie( LOGGED_IN_COOKIE, $value, $expiration, trailingslashit( SITECOOKIEPATH ) . 'wp-admin', COOKIE_DOMAIN, false, true );
+
+		foreach ( $this->get_logged_in_paths() as $path ) {
+			setcookie( LOGGED_IN_COOKIE, $value, $expiration, $path, COOKIE_DOMAIN, false, true );
+		}
 
 		if ( ! $this->user_gets_frontend_cookies( $user_id ) ) {
 			$this->hook( 'shutdown', 'logout_frontend' );
