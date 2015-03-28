@@ -1,19 +1,4 @@
 module.exports = (grunt) ->
-	# Regex, used twice
-	readmeReplacements = [
-		from: /^# (.*?)( #+)?$/mg
-		to: '=== $1 ==='
-	,
-		from: /^## (.*?)( #+)?$/mg
-		to: '== $1 =='
-	,
-		from: /^### (.*?)( #+)?$/mg
-		to: '= $1 ='
-	,
-		from: /^Stable tag:\s*?[\w.-]+(\s*?)$/mi
-		to: 'Stable tag: <%= pkg.version %>$1'
-	]
-
 	# Project configuration
 	grunt.initConfig
 		pkg: grunt.file.readJSON('package.json')
@@ -171,7 +156,19 @@ module.exports = (grunt) ->
 			svn_readme:
 				src: [ 'release/svn/readme.md' ]
 				dest: 'release/svn/readme.txt'
-				replacements: readmeReplacements
+				replacements: [
+					from: /^# (.*?)( #+)?$/mg
+					to: '=== $1 ==='
+				,
+					from: /^## (.*?)( #+)?$/mg
+					to: '== $1 =='
+				,
+					from: /^### (.*?)( #+)?$/mg
+					to: '= $1 ='
+				,
+					from: /^Stable tag:\s*?[\w.-]+(\s*?)$/mi
+					to: 'Stable tag: <%= pkg.version %>$1'
+				]
 
 		compress:
 			default:
