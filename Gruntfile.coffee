@@ -1,4 +1,24 @@
 module.exports = (grunt) ->
+
+	# Define CoffeeScript files in one place (no path or extension)
+	coffee_files = [
+		'cache-buddy'
+	]
+
+	# Build some arrays and objects
+	coffee_parse = (files) ->
+		out = {}
+		for file in files
+			out["js/#{file}.js"] = "js/#{file}.coffee"
+		out
+
+	uglify_parse = (file) ->
+		src: "js/#{file}.js"
+		dest: "js/#{file}.min.js"
+		sourceMapIn: "js/#{file}.js.map"
+
+	coffee_uglify_files = (uglify_parse file for file in coffee_files)
+
 	# Project configuration
 	grunt.initConfig
 		pkg: grunt.file.readJSON('package.json')
@@ -8,8 +28,7 @@ module.exports = (grunt) ->
 				join: yes
 				sourceMap: yes
 			default:
-				files:
-					'js/cache-buddy.js': 'js/cache-buddy.coffee'
+				files: coffee_parse coffee_files
 
 		coffeelint:
 			default: [ 'js/*.coffee' ]
@@ -44,11 +63,7 @@ module.exports = (grunt) ->
 				mangle:
 						except: [ 'jQuery' ]
 			default:
-				files: [
-					src: 'js/cache-buddy.js'
-					dest: 'js/cache-buddy.min.js'
-					sourceMapIn: 'js/cache-buddy.js.map'
-				]
+				files: coffee_uglify_files
 
 		compass:
 			options:
