@@ -228,10 +228,15 @@ module.exports = (grunt) ->
 		'clean:svn_readme_md'
 	]
 
+	# Deploy out a WordPress.org release
+	grunt.registerTask 'release:deploy', [
+		'wp_deploy'
+	]
+
 	# WordPress.org release task
 	grunt.registerTask 'release', [
 		'release:prepare'
-		'wp_deploy'
+		'release:deploy'
 	]
 
 	grunt.util.linefeed = '\n'
