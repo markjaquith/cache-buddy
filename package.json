@@ -24,7 +24,8 @@
     "grunt-contrib-compress": "~0.12.0",
     "grunt-phpunit": "~0.3.6",
     "grunt-text-replace": "~0.4.0",
-    "grunt-wp-deploy": "~1.0.3"
+    "grunt-wp-deploy": "~1.0.3",
+    "coffeelint": "^1"
   },
   "keywords": []
 }
