@@ -106,12 +106,13 @@ module.exports = (grunt) ->
 			default:
 				options:
 					plugin_slug: '<%= pkg.name %>'
-					build_dir: 'release/svn'
-					assets_dir: 'assets'
+					build_dir: 'release/svn/'
+					assets_dir: 'assets/'
 
 		clean:
 			release: [
-				'release/<%= pkg.version %>'
+				'release/<%= pkg.version %>/'
+				'release/svn/'
 			]
 			js: [
 				'js/*.js'
@@ -208,8 +209,6 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks 'grunt-contrib-compress'
 	grunt.loadNpmTasks 'grunt-text-replace'
 	grunt.loadNpmTasks 'grunt-phpunit'
-	grunt.loadNpmTasks 'grunt-svn-checkout'
-	grunt.loadNpmTasks 'grunt-push-svn'
 	grunt.loadNpmTasks 'grunt-wp-deploy'
 
 	# Default task
@@ -229,7 +228,7 @@ module.exports = (grunt) ->
 		'default'
 		'clean'
 		'copy:main'
-		# 'compress'
+		# 'compress' # Can comment this out for WordPress.org plugins
 	]
 
 	# Prepare a WordPress.org release
