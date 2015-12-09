@@ -12,13 +12,17 @@ do ($ = jQuery) ->
 	$ ->
 		mustLogIn = $ '.cache-buddy-must-log-in'
 		if readCookie 'cache_buddy_id'
+			formComment = $ '.comment-form-comment'
+				.detach()
 			loggedInMessage = $ '.cache-buddy-logged-in-as'
 				.detach()
 				.show()
 			profileURL = loggedInMessage.data 'profile-url'
-			loggedInMessage.find 'a[href=""]:empty'
+			loggedInMessage.find 'a[href=""]'
 				.html readCookie 'cache_buddy_username'
 				.attr href: profileURL
+			loggedInMessage
+				.append formComment
 			$ '.cache-buddy-comment-fields-wrapper'
 				.html loggedInMessage
 		else if mustLogIn.length
