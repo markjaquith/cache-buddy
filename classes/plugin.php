@@ -115,7 +115,7 @@ class Cache_Buddy_Plugin extends WP_Stack_Plugin2 {
 	 */
 	public function comment_form_defaults( $fields ) {
 		$fields['comment_notes_before'] = '<div class="cache-buddy-comment-fields-wrapper">' . $fields['comment_notes_before'];
-		$this->logged_in_as_message = $fields['logged_in_as'];
+		$this->logged_in_as_message = preg_replace( '/<a\shref="/', '<a rel="nofollow" href="', $fields['logged_in_as'] );
 		$this->must_log_in_message = $fields['must_log_in'];
 		$this->form_id = $fields['id_form'];
 		return $fields;
